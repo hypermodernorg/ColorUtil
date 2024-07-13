@@ -27,6 +27,18 @@ The input string should look similar to #000, #000000, rgb(0, 0, 0), hsl(0,0%,0%
 
 GetColorSpaces will return a Dictionary<string, object> of colorspaces where string is the colorspace, and the object contains the colorspace properties.
 
+To Get a specific colorspace, you can use the following:
+
+```csharp
+var rgb = cs.RGB;
+```
+
+And to access the properties of the colorspace, you can use the following:
+
+```csharp   
+var r = rgb.R;  
+```
+
 ## Colorspaces Included
 
 - CMYK

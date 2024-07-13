@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Dynamic;
 using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
@@ -11,20 +12,21 @@ namespace ColorUtil.Converter
     public class Converter
     {
    
-        public Dictionary<string, Object> GetColorSpaces(string color)
+        public IDictionary<string, Object> GetColorSpaces(string color)
         {
             List<Type> colorSpaceTypes = ColorSpaceTypes(); // List of ColorSpaces
-            List<Object> objects = new(); // List of objects in each color space.
             string detectedColorSpace = DetectColorSpace(color, colorSpaceTypes); // Find the color space of the color.
-            Dictionary<string, object> colorSpaceDictionary = new(); // Dictionary to hold color space objects
+            dynamic expandoObject = new ExpandoObject();
+            var expandoDict = expandoObject as IDictionary<string, object>;
 
             RGB rgb = new();
 
             if (detectedColorSpace == "Unknown")
             {
-                colorSpaceDictionary["Unknown"] = true;
-                return colorSpaceDictionary;
+                expandoDict.Add("Unknown", true);
+                return expandoDict;
             }
+
             // Create an instance of the class that matches the color space.
             Type type = Type.GetType("ColorUtil.Converter.ColorSpaces." + detectedColorSpace);
             object instance = Activator.CreateInstance(type);
@@ -34,8 +36,8 @@ namespace ColorUtil.Converter
 
             // Convert the color to RGB by running the method in the correct ColorSpace class.
             rgb = (RGB)method.Invoke(instance, new object[] { color });
-            colorSpaceDictionary["RGB"] = rgb;
-            objects.Add(rgb);
+            expandoDict.Add("RGB", rgb);
+
 
             // Loop through all of the types in the ColorSpaces namespace, except RGB, and convert the RGB color to the other color spaces.
             foreach (var colorSpaceType in colorSpaceTypes)
@@ -44,13 +46,15 @@ namespace ColorUtil.Converter
                 {
                     object instance2 = Activator.CreateInstance(colorSpaceType);
                     MethodInfo method2 = colorSpaceType.GetMethod("From");
-                    object result = method2.Invoke(instance2, new object[] { objects[0]});
+                    object result = method2.Invoke(instance2, new object[] { rgb });
 
-                    objects.Add(result);
-                    colorSpaceDictionary[colorSpaceType.Name] = result;
+    
+                    //colorSpaceDictionary[colorSpaceType.Name] = result;
+                    expandoDict.Add(colorSpaceType.Name, result);
                 }
             }
-            return colorSpaceDictionary;
+            //return colorSpaceDictionary;
+            return expandoDict;
         }
 
         public List<Type> ColorSpaceTypes()
