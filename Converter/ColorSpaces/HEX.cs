@@ -11,7 +11,7 @@ namespace ColorUtil.Converter.ColorSpaces
         public string Name { get; set; } = "HEX";
         public string? Code { get; set; }
 
-        public const string Pattern = @"^([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$";
+        public const string Pattern = @"^#?([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$";
 
         // Convert RGB to HEX
         public HEX From(RGB rgb)
